@@ -1,0 +1,31 @@
+.gameArea {
+  position: relative;
+  width: 800px;
+  height: 600px;
+  border: 2px solid #333;
+  background-color: #87CEEB; /* Sky blue background */
+  overflow: hidden;
+  margin: 20px auto;
+}
+
+.player {
+  position: absolute;
+  width: 50px; /* Width of a single sprite frame */
+  height: 50px; /* Height of a single sprite frame */
+  background-image: url('/player_sprite.png'); /* Path to your sprite sheet */
+  background-size: 200px 50px; /* Assuming 4 frames of 50px width each (4*50=200) */
+  background-repeat: no-repeat;
+  bottom: 0; /* Start at the bottom */
+  left: 50px;
+  transition: transform 0.05s linear; /* Smooth movement */
+}
+
+.player.left {
+  transform: scaleX(-1); /* Flip sprite horizontally for left direction */
+}
+
+.platform {
+  position: absolute;
+  background-color: #8B4513; /* Brown color for platforms */
+  border: 1px solid #5a2d0a;
+}
