@@ -12,8 +12,23 @@ const DebugPanel = ({
   setMoveSpeed,
   setPlayerWidth,
   setPlayerHeight,
-  onClose
+  onClose,
+  onImportLevel // Add onImportLevel to props
 }) => {
+  const handleImportLevel = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        const content = e.target.result;
+        if (onImportLevel) { // Check if onImportLevel is provided
+          onImportLevel(content);
+        }
+      };
+      reader.readAsText(file);
+    }
+  };
+
   return (
     <div className={styles.debugPanel}>
       <h3>Debug Settings</h3>
@@ -76,6 +91,10 @@ const DebugPanel = ({
           onChange={(e) => setPlayerHeight(parseFloat(e.target.value))}
         />
         <span>{playerHeight.toFixed(0)}</span>
+      </div>
+      <div>
+        <label>Import Level: </label>
+        <input type="file" accept=".txt,.xml" onChange={handleImportLevel} />
       </div>
       <button onClick={onClose}>Close</button>
     </div>

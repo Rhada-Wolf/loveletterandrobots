@@ -1,7 +1,7 @@
 .gameArea {
   position: relative;
-  width: 800px;
-  height: 600px;
+  width: 960px; /* 30 tiles * 32px/tile */
+  height: 640px; /* 20 tiles * 32px/tile */
   border: 2px solid #333;
   background-color: #87CEEB; /* Sky blue background */
   overflow: hidden;
@@ -22,8 +22,23 @@
 
 .platform {
   position: absolute;
-  background-color: #8B4513; /* Brown color for platforms */
-  border: 1px solid #5a2d0a;
+  border: 1px solid #4b5263;
+}
+
+.tileG {
+  background-color: #8B4513; /* Brown for Ground */
+}
+
+.tileW {
+  background-color: #61afef; /* Blue for Water */
+}
+
+.tileR {
+  background-color: #228B22; /* Forest Green for Grass */
+}
+
+.tileSt {
+  background-color: #FFD700; /* Gold for Start Position */
 }
 
 

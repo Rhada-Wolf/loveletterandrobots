@@ -1,0 +1,86 @@
+.editorContainer {
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  background-color: #282c34;
+  color: #abb2bf;
+}
+
+.controls {
+  margin-bottom: 20px;
+  display: flex;
+  gap: 15px;
+  align-items: center;
+}
+
+.controls label {
+  display: flex;
+  flex-direction: column;
+  font-size: 0.9em;
+}
+
+.controls input[type="number"],
+.controls select {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #61afef;
+  background-color: #3e4451;
+  color: #abb2bf;
+  margin-top: 5px;
+}
+
+.controls button {
+  padding: 10px 15px;
+  background-color: #61afef;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+}
+
+.controls button:hover {
+  background-color: #528cbf;
+}
+
+.gridContainer {
+  display: grid;
+  border: 1px solid #61afef;
+  background-color: #3e4451;
+}
+
+.gridCell {
+  width: 32px;
+  height: 32px;
+  border: 1px solid #4b5263;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 0.8em;
+  cursor: pointer;
+  transition: background-color 0.1s ease;
+}
+
+.gridCell:hover {
+  background-color: #4b5263;
+}
+
+.tileG {
+  background-color: #8B4513; /* Brown for Ground */
+}
+
+.tileW {
+  background-color: #61afef; /* Blue for Water */
+}
+
+.tileR {
+  background-color: #228B22; /* Forest Green for Grass */
+}
+
+.tileEmpty {
+  background-color: #3e4451; /* Dark background for empty */
+}
+
+.tileSt {
+  background-color: #FFD700; /* Gold for Start Position */
+}
