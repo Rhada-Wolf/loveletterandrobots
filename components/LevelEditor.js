@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styles from '../styles/LevelEditor.module.css';
-
-const TILE_SIZE = 32; // Size of each tile in pixels
+import { TILE_SIZE } from '../lib/game/constants';
+import { parseLevelData } from '../lib/game/utils';
 
 const LevelEditor = () => {
   const [grid, setGrid] = useState([]);
@@ -20,40 +20,14 @@ const LevelEditor = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const content = await response.text();
-        const lines = content.split('\n');
-        const importedGrid = [];
-        let maxCols = 0;
-
-        lines.forEach(line => {
-          const row = [];
-          for (let i = 0; i < line.length; i++) {
-            if (line[i] === 'S' && i + 1 < line.length && line[i+1] === 't') {
-              row.push('St');
-              i++;
-            } else {
-              row.push(line[i]);
-            }
-          }
-          importedGrid.push(row);
-          if (row.length > maxCols) {
-            maxCols = row.length;
-          }
-        });
-
-        const normalizedGrid = importedGrid.map(row => {
-          const newRow = [...row];
-          while (newRow.length < maxCols) {
-            newRow.push(' ');
-          }
-          return newRow;
-        });
+        const { grid: normalizedGrid, rows: parsedRows, cols: parsedCols } = parseLevelData(content);
 
         if (normalizedGrid.length > 0) {
-          setRows(normalizedGrid.length);
-          setCols(maxCols);
+          setRows(parsedRows);
+          setCols(parsedCols);
           setGrid(normalizedGrid);
-          setTempRows(normalizedGrid.length);
-          setTempCols(maxCols);
+          setTempRows(parsedRows);
+          setTempCols(parsedCols);
         } else {
           initializeGrid(rows, cols);
         }
@@ -101,8 +75,22 @@ const LevelEditor = () => {
   };
 
   const updateGridSize = () => {
-    setRows(tempRows);
-    setCols(tempCols);
+    const newRows = tempRows;
+    const newCols = tempCols;
+
+    setGrid(prevGrid => {
+      const newGrid = Array(newRows).fill(null).map((_, rowIndex) =>
+        Array(newCols).fill(null).map((_, colIndex) => {
+          if (prevGrid[rowIndex] && prevGrid[rowIndex][colIndex] !== undefined) {
+            return prevGrid[rowIndex][colIndex];
+          }
+          return ' '; // Fill new cells with empty space
+        })
+      );
+      return newGrid;
+    });
+    setRows(newRows);
+    setCols(newCols);
   };
 
   const exportLevel = () => {
@@ -125,41 +113,13 @@ const LevelEditor = () => {
       const reader = new FileReader();
       reader.onload = (e) => {
         const content = e.target.result;
-        const lines = content.split('\n'); // Do not trim lines here, empty lines might be part of the level structure
-        const importedGrid = [];
-        let maxCols = 0;
-
-        lines.forEach(line => {
-          const row = [];
-          for (let i = 0; i < line.length; i++) {
-            if (line[i] === 'S' && i + 1 < line.length && line[i+1] === 't') { // Check for 'St' and bounds
-              row.push('St');
-              i++; // Skip 't'
-            } else {
-              row.push(line[i]);
-            }
-          }
-          importedGrid.push(row);
-          if (row.length > maxCols) {
-            maxCols = row.length;
-          }
-        });
-
-        // Ensure all rows have the same number of columns and handle empty lines
-        const normalizedGrid = importedGrid.map(row => {
-          const newRow = [...row];
-          while (newRow.length < maxCols) {
-            newRow.push(' '); // Pad with empty space
-          }
-          return newRow;
-        });
+        const { grid: normalizedGrid, rows: parsedRows, cols: parsedCols } = parseLevelData(content);
 
         if (normalizedGrid.length > 0) {
-          setRows(normalizedGrid.length);
-          setCols(maxCols);
+          setRows(parsedRows);
+          setCols(parsedCols);
           setGrid(normalizedGrid);
         } else {
-          // If the file is empty, initialize an empty grid
           initializeGrid(rows, cols);
         }
       };
@@ -193,7 +153,7 @@ const LevelEditor = () => {
           </select>
         </label>
         <button onClick={exportLevel}>Export Level</button>
-        <input type="file" accept=".txt,.xml" onChange={importLevel} />
+        <input type="file" accept=".txt" onChange={importLevel} />
       </div>
       <div
         className={styles.gridContainer}

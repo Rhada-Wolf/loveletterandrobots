@@ -10,14 +10,149 @@
 
 .player {
   position: absolute;
-  width: 50px; /* Width of a single sprite frame */
-  height: 50px; /* Height of a single sprite frame */
-  background-color: yellow;
-  border-radius: 50%;
+  width: 32px; /* Width of a single sprite frame */
+  height: 32px; /* Height of a single sprite frame */
+  background-image: url('/assets/characters/Pink_Monster_Idle_4.png'); /* Default idle animation */
+  background-size: auto 100%; /* Adjust based on sprite sheet dimensions */
+  background-repeat: no-repeat;
+  background-position: 0 0; /* Start at the first frame */
+  image-rendering: pixelated; /* Keep pixel art sharp */
 }
 
 .player.left {
   transform: scaleX(-1); /* Flip sprite horizontally for left direction */
+  /* Ensure no other transform properties are overriding this */
+}
+
+/* Animation for idle state */
+@keyframes idleAnimation {
+  from { background-position: 0px 0; }
+  to { background-position: -128px 0; } /* 4 frames * 32px/frame = 128px */
+}
+
+.player.idle {
+  animation: idleAnimation 0.4s steps(4) infinite;
+}
+
+/* Animation for run state */
+.player.run {
+  background-image: url('/assets/characters/Pink_Monster_Run_6.png');
+  animation: runAnimation 0.6s steps(6) infinite;
+}
+
+@keyframes runAnimation {
+  from { background-position: 0px 0; }
+  to { background-position: -192px 0; } /* 6 frames * 32px/frame = 192px */
+}
+
+/* Animation for jump state */
+.player.jump {
+  background-image: url('/assets/characters/Pink_Monster_Jump_8.png');
+  animation: jumpAnimation 0.8s steps(8) forwards; /* Play once and hold last frame */
+}
+
+@keyframes jumpAnimation {
+  from { background-position: 0px 0; }
+  to { background-position: -256px 0; } /* 8 frames * 32px/frame = 256px */
+}
+
+/* Animation for attack1 state */
+.player.attack1 {
+  background-image: url('/assets/characters/Pink_Monster_Attack1_4.png');
+  animation: attack1Animation 0.4s steps(4) forwards;
+}
+
+@keyframes attack1Animation {
+  from { background-position: 0px 0; }
+  to { background-position: -128px 0; } /* 4 frames * 32px/frame = 128px */
+}
+
+/* Animation for attack2 state */
+.player.attack2 {
+  background-image: url('/assets/characters/Pink_Monster_Attack2_6.png');
+  animation: attack2Animation 0.6s steps(6) forwards;
+}
+
+@keyframes attack2Animation {
+  from { background-position: 0px 0; }
+  to { background-position: -192px 0; } /* 6 frames * 32px/frame = 192px */
+}
+
+/* Animation for climb state */
+.player.climb {
+  background-image: url('/assets/characters/Pink_Monster_Climb_4.png');
+  animation: climbAnimation 0.4s steps(4) infinite;
+}
+
+@keyframes climbAnimation {
+  from { background-position: 0px 0; }
+  to { background-position: -128px 0; } /* 4 frames * 32px/frame = 128px */
+}
+
+/* Animation for death state */
+.player.death {
+  background-image: url('/assets/characters/Pink_Monster_Death_8.png');
+  animation: deathAnimation 0.8s steps(8) forwards;
+}
+
+@keyframes deathAnimation {
+  from { background-position: 0px 0; }
+  to { background-position: -256px 0; } /* 8 frames * 32px/frame = 256px */
+}
+
+/* Animation for hurt state */
+.player.hurt {
+  background-image: url('/assets/characters/Pink_Monster_Hurt_4.png');
+  animation: hurtAnimation 0.4s steps(4) forwards;
+}
+
+@keyframes hurtAnimation {
+  from { background-position: 0px 0; }
+  to { background-position: -128px 0; } /* 4 frames * 32px/frame = 128px */
+}
+
+/* Animation for push state */
+.player.push {
+  background-image: url('/assets/characters/Pink_Monster_Push_6.png');
+  animation: pushAnimation 0.6s steps(6) infinite;
+}
+
+@keyframes pushAnimation {
+  from { background-position: 0px 0; }
+  to { background-position: -192px 0; } /* 6 frames * 32px/frame = 192px */
+}
+
+/* Animation for throw state */
+.player.throw {
+  background-image: url('/assets/characters/Pink_Monster_Throw_4.png');
+  animation: throwAnimation 0.4s steps(4) forwards;
+}
+
+@keyframes throwAnimation {
+  from { background-position: 0px 0; }
+  to { background-position: -128px 0; } /* 4 frames * 32px/frame = 128px */
+}
+
+/* Animation for walk state */
+.player.walk {
+  background-image: url('/assets/characters/Pink_Monster_Walk_6.png');
+  animation: walkAnimation 0.6s steps(6) infinite;
+}
+
+@keyframes walkAnimation {
+  from { background-position: 0px 0; }
+  to { background-position: -192px 0; } /* 6 frames * 32px/frame = 192px */
+}
+
+/* Animation for walk+attack state */
+.player.walkAttack {
+  background-image: url('/assets/characters/Pink_Monster_Walk+Attack_6.png');
+  animation: walkAttackAnimation 0.6s steps(6) forwards;
+}
+
+@keyframes walkAttackAnimation {
+  from { background-position: 0px 0; }
+  to { background-position: -192px 0; } /* 6 frames * 32px/frame = 192px */
 }
 
 .platform {

@@ -94,7 +94,7 @@ const DebugPanel = ({
       </div>
       <div>
         <label>Import Level: </label>
-        <input type="file" accept=".txt,.xml" onChange={handleImportLevel} />
+        <input type="file" accept=".txt" onChange={handleImportLevel} />
       </div>
       <button onClick={onClose}>Close</button>
     </div>
