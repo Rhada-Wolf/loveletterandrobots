@@ -13,7 +13,8 @@ const DebugPanel = ({
   setPlayerWidth,
   setPlayerHeight,
   onClose,
-  onImportLevel // Add onImportLevel to props
+  onImportLevel, // Add onImportLevel to props
+  keysPressed // Add keysPressed to props
 }) => {
   const handleImportLevel = (event) => {
     const file = event.target.files[0];

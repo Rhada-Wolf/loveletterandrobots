@@ -9,7 +9,7 @@ const PlatformerGame = () => {
   const gameEngineRef = useRef(null);
   const gameAreaRef = useRef(null);
   const playerRef = useRef(null);
-  const keysPressed = useRef({});
+  const [keysPressed, setKeysPressed] = useState({});
 
   const [playerRenderData, setPlayerRenderData] = useState(null);
   const [platformsRenderData, setPlatformsRenderData] = useState([]);
@@ -24,8 +24,10 @@ const PlatformerGame = () => {
       playerWidth: 32,
       playerHeight: 32,
       tileSize: TILE_SIZE,
-      gameAreaWidth: 30 * TILE_SIZE,
-      gameAreaHeight: 20 * TILE_SIZE,
+      gameAreaWidth: 30 * TILE_SIZE, // Initial default, will be updated by level
+      gameAreaHeight: 20 * TILE_SIZE, // Initial default, will be updated by level
+      viewportWidth: gameAreaRef.current ? gameAreaRef.current.offsetWidth : 960, // Default or actual
+      viewportHeight: gameAreaRef.current ? gameAreaRef.current.offsetHeight : 640, // Default or actual
     });
 
     // Load initial level
@@ -47,13 +49,20 @@ const PlatformerGame = () => {
 
     // Setup game loop
     let animationFrameId;
-    const gameLoop = () => {
-      gameEngineRef.current.setKeysPressed(keysPressed.current);
-      gameEngineRef.current.update(1 / 60); // Assuming 60 FPS
-      const renderedEntities = gameEngineRef.current.render();
+    let lastTime = 0; // Initialize lastTime outside the loop
+
+    const gameLoop = (currentTime) => {
+      if (!lastTime) lastTime = currentTime; // Initialize on first frame
+      const deltaTime = currentTime - lastTime; // Calculate deltaTime in milliseconds
+      lastTime = currentTime; // Update lastTime for the next frame
+
+      gameEngineRef.current.setKeysPressed(keysPressed); // Use state directly
+      gameEngineRef.current.update(deltaTime); // Pass deltaTime
+      const renderedEntities = gameEngineRef.current.render(); // RenderSystem now handles camera offset
 
       const playerEntity = gameEngineRef.current.getEntitiesByComponent('PlayerComponent')[0];
       if (playerEntity) {
+        // RenderSystem already returns camera-adjusted positions
         setPlayerRenderData({
           x: playerEntity.PositionComponent.x,
           y: playerEntity.PositionComponent.y,
@@ -65,6 +74,7 @@ const PlatformerGame = () => {
       }
 
       setPlatformsRenderData(gameEngineRef.current.getEntitiesByComponent('CollisionComponent').filter(e => !e.PlayerComponent).map(platform => ({
+        // RenderSystem already returns camera-adjusted positions for platforms too
         x: platform.PositionComponent.x,
         y: platform.PositionComponent.y,
         width: platform.CollisionComponent.width,
@@ -78,14 +88,11 @@ const PlatformerGame = () => {
     animationFrameId = requestAnimationFrame(gameLoop);
 
     const handleKeyDown = (e) => {
-      if (e.key === ' ') {
-        e.preventDefault();
-      }
-      keysPressed.current[e.key] = true;
+      setKeysPressed(prev => ({ ...prev, [e.key]: true }));
     };
 
     const handleKeyUp = (e) => {
-      keysPressed.current[e.key] = false;
+      setKeysPressed(prev => ({ ...prev, [e.key]: false }));
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -149,7 +156,7 @@ const PlatformerGame = () => {
         ref={playerRef}
         className={`${styles.player} ${styles[playerRenderData.direction]} ${styles[playerRenderData.animationState]}`}
         style={{
-          transform: `translate(${playerRenderData.x}px, ${playerRenderData.y}px)`,
+          transform: `translate(${playerRenderData.x}px, ${playerRenderData.y}px)`, // Positions are already camera-adjusted
           width: playerRenderData.width,
           height: playerRenderData.height,
         }}
@@ -160,8 +167,8 @@ const PlatformerGame = () => {
           key={index}
           className={`${styles.platform} ${styles[`tile${platform.type}`]}`}
           style={{
-            left: platform.x,
-            top: platform.y,
+            left: platform.x, // Positions are already camera-adjusted
+            top: platform.y, // Positions are already camera-adjusted
             width: platform.width,
             height: platform.height,
           }}
@@ -186,6 +193,7 @@ const PlatformerGame = () => {
           setPlayerHeight={(value) => handleDebugPanelChange('playerHeight', value)}
           onClose={() => setShowDebugPanel(false)}
           onImportLevel={handleImportLevel}
+          keysPressed={keysPressed} // Pass keysPressed state
         />
       )}
     </div>

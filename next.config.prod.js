@@ -4,8 +4,8 @@
 const repoName = 'GameJamAITemplate';
 
 const nextConfig = {
-  basePath: `/${repoName}`,
-  assetPrefix: `/${repoName}/`,
+  // basePath: `/${repoName}`, // Temporarily commented out for debugging 404 in Codespaces
+  // assetPrefix: `/${repoName}/`, // Temporarily commented out for debugging 404 in Codespaces
   output: 'export',
   images: {
     unoptimized: true, // Required for static export
