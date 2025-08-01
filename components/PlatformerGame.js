@@ -1,22 +1,38 @@
 import React, { useRef, useEffect, useState, useCallback } from 'react';
 import styles from '../styles/platformer.module.css';
-
-const GRAVITY = 0.5;
-const JUMP_STRENGTH = 10;
-const MOVE_SPEED = 5;
+import DebugPanel from './DebugPanel';
 
 const PlatformerGame = () => {
+  const [gravity, setGravity] = useState(0.5);
+  const [jumpStrength, setJumpStrength] = useState(10);
+  const [moveSpeed, setMoveSpeed] = useState(5);
+  const [playerWidth, setPlayerWidth] = useState(50);
+  const [playerHeight, setPlayerHeight] = useState(50);
+  const [showDebugPanel, setShowDebugPanel] = useState(false);
+
   const gameAreaRef = useRef(null);
   const playerRef = useRef(null);
+  const keysPressed = useRef({}); // To track currently pressed keys
+
   const [playerState, setPlayerState] = useState({
     x: 50,
-    y: 0,
+    y: 500, // Start player on the ground
     velocityY: 0,
     isJumping: false,
     isGrounded: false,
     direction: 'right', // 'left' or 'right'
-    animationFrame: 0,
+    width: 50, // Initial player width
+    height: 50, // Initial player height
   });
+
+  // Update player dimensions when playerWidth or playerHeight change from debug panel
+  useEffect(() => {
+    setPlayerState(prev => ({
+      ...prev,
+      width: playerWidth,
+      height: playerHeight,
+    }));
+  }, [playerWidth, playerHeight]);
 
   const platforms = [
     { x: 0, y: 550, width: 800, height: 50 }, // Ground
@@ -25,89 +41,98 @@ const PlatformerGame = () => {
   ];
 
   const updateGame = useCallback(() => {
-    setPlayerState(prev => {
-      let newY = prev.y + prev.velocityY;
-      let newVelocityY = prev.velocityY + GRAVITY;
-      let newIsGrounded = false;
+    setPlayerState(prevPlayer => {
+      let newPlayerX = prevPlayer.x;
+      let newPlayerY = prevPlayer.y + prevPlayer.velocityY;
+      let newPlayerVelocityY = prevPlayer.velocityY + gravity;
+      let newPlayerIsGrounded = false;
+      let newDirection = prevPlayer.direction;
 
-      // Collision detection with platforms
+      // Handle horizontal movement based on keysPressed
+      if (keysPressed.current['ArrowLeft']) {
+        newPlayerX = Math.max(0, prevPlayer.x - moveSpeed);
+        newDirection = 'left';
+      }
+      if (keysPressed.current['ArrowRight']) {
+        newPlayerX = Math.min(800 - prevPlayer.width, prevPlayer.x + moveSpeed);
+        newDirection = 'right';
+      }
+
+      // Player collision detection with platforms
       platforms.forEach(platform => {
         if (
-          prev.x < platform.x + platform.width &&
-          prev.x + 50 > platform.x && // Player width
-          newY + 50 > platform.y && // Player height
-          newY < platform.y + platform.height
+          newPlayerX < platform.x + platform.width &&
+          newPlayerX + prevPlayer.width > platform.x &&
+          newPlayerY + prevPlayer.height > platform.y &&
+          newPlayerY < platform.y + platform.height
         ) {
-          // If falling and hit top of platform
-          if (prev.velocityY > 0 && prev.y + 50 <= platform.y) {
-            newY = platform.y - 50; // Snap to top of platform
-            newVelocityY = 0;
-            newIsGrounded = true;
-            prev.isJumping = false; // Reset jumping state
+          if (prevPlayer.velocityY > 0 && prevPlayer.y + prevPlayer.height <= platform.y) {
+            newPlayerY = platform.y - prevPlayer.height;
+            newPlayerVelocityY = 0;
+            newPlayerIsGrounded = true;
+            // Only set isJumping to false if landing on a platform
+            if (prevPlayer.isJumping) {
+              setPlayerState(p => ({ ...p, isJumping: false }));
+            }
           }
         }
       });
 
       // Keep player within game area bounds (bottom)
-      if (newY + 50 > 600) { // Game area height is 600
-        newY = 550; // Snap to ground
-        newVelocityY = 0;
-        newIsGrounded = true;
-        prev.isJumping = false;
+      if (newPlayerY + prevPlayer.height > 600) {
+        newPlayerY = 600 - prevPlayer.height;
+        newPlayerVelocityY = 0;
+        newPlayerIsGrounded = true;
+        // Only set isJumping to false if landing on the ground
+        if (prevPlayer.isJumping) {
+          setPlayerState(p => ({ ...p, isJumping: false }));
+        }
+      }
+
+      // Handle jump
+      if (keysPressed.current['ArrowUp'] && newPlayerIsGrounded && !prevPlayer.isJumping) {
+        newPlayerVelocityY = -jumpStrength;
+        setPlayerState(p => ({ ...p, isJumping: true }));
       }
 
       return {
-        ...prev,
-        y: newY,
-        velocityY: newVelocityY,
-        isGrounded: newIsGrounded,
+        ...prevPlayer,
+        x: newPlayerX,
+        y: newPlayerY,
+        velocityY: newPlayerVelocityY,
+        isGrounded: newPlayerIsGrounded,
+        direction: newDirection,
       };
     });
-  }, [platforms]);
-
-  const handleKeyDown = useCallback((e) => {
-    setPlayerState(prev => {
-      let newX = prev.x;
-      let newVelocityY = prev.velocityY;
-      let newIsJumping = prev.isJumping;
-      let newDirection = prev.direction;
-      let newAnimationFrame = prev.animationFrame;
-
-      switch (e.key) {
-        case 'ArrowLeft':
-          newX = Math.max(0, prev.x - MOVE_SPEED);
-          newDirection = 'left';
-          newAnimationFrame = (prev.animationFrame + 1) % 4; // Assuming 4 frames for running
-          break;
-        case 'ArrowRight':
-          newX = Math.min(750, prev.x + MOVE_SPEED); // Game area width - player width
-          newDirection = 'right';
-          newAnimationFrame = (prev.animationFrame + 1) % 4; // Assuming 4 frames for running
-          break;
-        case 'ArrowUp':
-          if (prev.isGrounded && !prev.isJumping) {
-            newVelocityY = -JUMP_STRENGTH;
-            newIsJumping = true;
-            newAnimationFrame = 0; // Reset animation frame on jump
-          }
-          break;
-        default:
-          newAnimationFrame = 0; // Idle frame
-          break;
-      }
-      return { ...prev, x: newX, velocityY: newVelocityY, isJumping: newIsJumping, direction: newDirection, animationFrame: newAnimationFrame };
-    });
-  }, []);
+  }, [platforms, gravity, moveSpeed, jumpStrength]); // Added moveSpeed and jumpStrength to dependencies
 
   useEffect(() => {
-    const gameLoop = setInterval(updateGame, 1000 / 60); // 60 FPS
+    let animationFrameId;
+
+    const handleKeyDown = (e) => {
+      keysPressed.current[e.key] = true;
+    };
+
+    const handleKeyUp = (e) => {
+      keysPressed.current[e.key] = false;
+    };
+
+    const loop = () => {
+      updateGame();
+      animationFrameId = requestAnimationFrame(loop);
+    };
+
+    animationFrameId = requestAnimationFrame(loop);
     window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
 
     return () => {
-      clearInterval(gameLoop);
+      cancelAnimationFrame(animationFrameId);
       window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
     };
-  }, [updateGame, handleKeyDown]);
+  }, [updateGame]); // Only updateGame is needed here, as other dependencies are in updateGame itself
+
 
   return (
     <div ref={gameAreaRef} className={styles.gameArea}>
@@ -116,9 +141,11 @@ const PlatformerGame = () => {
         className={`${styles.player} ${styles[playerState.direction]}`}
         style={{
           transform: `translate(${playerState.x}px, ${playerState.y}px)`,
-          backgroundPosition: `-${playerState.animationFrame * 50}px 0`, // Assuming 50px wide frames
+          width: playerState.width,
+          height: playerState.height,
         }}
       ></div>
+
       {platforms.map((platform, index) => (
         <div
           key={index}
@@ -131,6 +158,26 @@ const PlatformerGame = () => {
           }}
         ></div>
       ))}
+
+      <button className={styles.debugButton} onClick={() => setShowDebugPanel(!showDebugPanel)}>
+        Debug
+      </button>
+
+      {showDebugPanel && (
+        <DebugPanel
+          gravity={gravity}
+          setGravity={setGravity}
+          jumpStrength={jumpStrength}
+          setJumpStrength={setJumpStrength}
+          moveSpeed={moveSpeed}
+          setMoveSpeed={setMoveSpeed}
+          playerWidth={playerWidth}
+          setPlayerWidth={setPlayerWidth}
+          playerHeight={playerHeight}
+          setPlayerHeight={setPlayerHeight}
+          onClose={() => setShowDebugPanel(false)}
+        />
+      )}
     </div>
   );
 };
